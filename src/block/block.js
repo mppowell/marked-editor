@@ -12,6 +12,9 @@ import './style.scss';
 const { __ } = wp.i18n; // Import __() from wp.i18n
 const { registerBlockType } = wp.blocks; // Import registerBlockType() from wp.blocks
 
+const { PlainText } = wp.blockEditor;
+const { RawHTML } = wp.element;
+
 /**
  * Register: aa Gutenberg Block.
  *
@@ -35,6 +38,9 @@ registerBlockType( 'cgb/block-marked-editor', {
 		__( 'CGB Example' ),
 		__( 'create-guten-block' ),
 	],
+	attributes: {
+		content: {type: 'string'},
+	},
 
 	/**
 	 * The edit function describes the structure of your block in the context of the editor.
@@ -48,22 +54,31 @@ registerBlockType( 'cgb/block-marked-editor', {
 	 * @returns {Mixed} JSX Component.
 	 */
 	edit: ( props ) => {
-		// Creates a <p class='wp-block-cgb-block-marked-editor'></p>.
-		return (
-			<div className={ props.className }>
-				<p>— Hello from the backend.</p>
-				<p>
-					CGB BLOCK: <code>marked-editor</code> is a new Gutenberg block
-				</p>
-				<p>
-					It was created via{ ' ' }
-					<code>
-						<a href="https://github.com/ahmadawais/create-guten-block">
-							create-guten-block
-						</a>
-					</code>.
-				</p>
-			</div>
+		// Creates a <p class='wp-block-cgb-block-ascii-tree'></p>.
+		function updateContent(eventContent){
+			props.setAttributes({content: eventContent})
+		}
+
+		// Handle keypress and intercept tabs
+		function handleKeypress(event){
+		//event.target.style.cssText = "height:" + event.target.scrollHeight + "px";
+		if(event.keyCode==9 || event.which==9) {
+			event.preventDefault();
+			let s = event.target.selectionStart;
+			event.target.value = event.target.value.substring(0,s) + "    " + event.target.value.substring(s);
+			event.target.selectionEnd = s+4;
+		} 
+		}
+
+		return (      
+		<PlainText
+			onChange={updateContent}
+			onKeyDown={handleKeypress}
+			className={ props.className }
+			placeholder="Type markdown here"
+			keepPlaceholderOnFocus={true}
+			value={props.attributes.content}
+			/>
 		);
 	},
 
@@ -81,18 +96,9 @@ registerBlockType( 'cgb/block-marked-editor', {
 	save: ( props ) => {
 		return (
 			<div className={ props.className }>
-				<p>— Hello from the frontend.</p>
-				<p>
-					CGB BLOCK: <code>marked-editor</code> is a new Gutenberg block.
-				</p>
-				<p>
-					It was created via{ ' ' }
-					<code>
-						<a href="https://github.com/ahmadawais/create-guten-block">
-							create-guten-block
-						</a>
-					</code>.
-				</p>
+				<RawHTML>
+					{DOMPurify.sanitize(marked(props.attributes.content))}
+				</RawHTML>
 			</div>
 		);
 	},

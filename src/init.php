@@ -28,6 +28,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @since 1.0.0
  */
 function marked_editor_cgb_block_assets() { // phpcs:ignore
+	// Register marked script
+	wp_register_script(
+		'marked_script', // Handle (use to add this as a depenedency for main code)
+		plugins_url( 'node_modules/marked/marked.min.js', dirname(__FILE__) ), // Minified marked javascript
+		null // No wordpress version required
+	);
+
+	// Register DOMPurify script
+	wp_register_script(
+		'dompurify_script', // Handle (use to add this as a depenedency for main code)
+		plugins_url( 'node_modules/dompurify/dist/purify.min.js', dirname(__FILE__) ), // Minified DOMPurify javascript
+		null // No wordpress version required
+	);
+
 	// Register block styles for both frontend + backend.
 	wp_register_style(
 		'marked_editor-cgb-style-css', // Handle.
@@ -40,7 +54,7 @@ function marked_editor_cgb_block_assets() { // phpcs:ignore
 	wp_register_script(
 		'marked_editor-cgb-block-js', // Handle.
 		plugins_url( '/dist/blocks.build.js', dirname( __FILE__ ) ), // Block.build.js: We register the block here. Built with Webpack.
-		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor' ), // Dependencies, defined above.
+		array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'wp-block-editor', 'marked_script', 'dompurify_script' ), // Dependencies, defined above.
 		null, // filemtime( plugin_dir_path( __DIR__ ) . 'dist/blocks.build.js' ), // Version: filemtime — Gets file modification time.
 		true // Enqueue the script in the footer.
 	);
